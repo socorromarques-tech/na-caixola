@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PenTool, Search, FolderOpen, User } from 'lucide-react';
-import { UserButton } from '@clerk/nextjs';
+import { LayoutDashboard, PenTool, Search, FolderOpen, LogIn } from 'lucide-react';
+import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -26,7 +26,16 @@ export function BottomNav() {
         <NavButton href="/archive" icon={<FolderOpen size={24} />} active={pathname === '/archive'} />
         
         <div className="flex flex-col items-center justify-center w-12">
-            <UserButton appearance={{ elements: { avatarBox: "w-8 h-8" } }} />
+            <SignedIn>
+                <UserButton appearance={{ elements: { avatarBox: "w-8 h-8" } }} />
+            </SignedIn>
+            <SignedOut>
+                <SignInButton mode="modal">
+                    <button className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                        <LogIn size={24} />
+                    </button>
+                </SignInButton>
+            </SignedOut>
         </div>
       </div>
     </nav>
