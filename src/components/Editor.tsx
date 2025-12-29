@@ -28,7 +28,7 @@ export function Editor({ content = '', onChange }: EditorProps) {
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-lg prose-indigo max-w-none focus:outline-none min-h-[300px]',
+        class: 'prose prose-lg prose-indigo dark:prose-invert max-w-none focus:outline-none min-h-[300px]',
       },
     },
     immediatelyRender: false,
@@ -40,14 +40,14 @@ export function Editor({ content = '', onChange }: EditorProps) {
   // Prevent hydration mismatch by only rendering editor on client
   if (!isMounted) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 min-h-[500px] flex items-center justify-center">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 min-h-[500px] flex items-center justify-center">
         <div className="text-slate-400 font-medium">Carregando editor...</div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 min-h-[500px]">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 min-h-[500px]">
       <EditorContent editor={editor} />
     </div>
   )
