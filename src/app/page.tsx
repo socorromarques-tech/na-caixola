@@ -15,10 +15,10 @@ export default async function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
-      <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 md:p-8 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden">
+      <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-5 md:p-8 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden">
         <div className="relative z-10">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">O que você aprendeu hoje{user ? `, ${user.firstName}` : ''}?</h2>
-          <p className="text-indigo-100 mb-6 md:mb-8 max-w-lg text-sm md:text-base">O conhecimento só se torna sabedoria quando é processado e armazenado. Guarde suas descobertas.</p>
+          <h2 className="text-xl md:text-3xl font-bold mb-3 md:mb-2 leading-tight">O que você aprendeu hoje{user ? `, ${user.firstName}` : ''}?</h2>
+          <p className="text-indigo-100 mb-4 md:mb-8 max-w-lg text-sm md:text-base leading-relaxed">O conhecimento só se torna sabedoria quando é processado e armazenado. Guarde suas descobertas.</p>
           
           {/* Hide button on mobile as it is in bottom nav */}
           <div className="hidden md:flex gap-3">

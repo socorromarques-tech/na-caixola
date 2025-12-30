@@ -32,8 +32,8 @@ export default function RootLayout({
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
-                    {/* Hide UserButton on mobile, it is in BottomNav */}
-                    <div className="hidden md:block">
+                    {/* Show UserButton on mobile too for now, to ensure access to settings/logout */}
+                    <div className="block md:block">
                       <UserButton />
                     </div>
                   </SignedIn>
