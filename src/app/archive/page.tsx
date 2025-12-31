@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { NoteCard } from '@/components/NoteCard';
