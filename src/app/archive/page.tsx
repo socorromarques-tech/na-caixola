@@ -3,26 +3,32 @@ import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { NoteCard } from '@/components/NoteCard';
 import { SearchInput } from '@/components/SearchInput';
+import { TagFilter } from '@/components/TagFilter';
 import { redirect } from 'next/navigation';
 
-export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string; tags?: string }> }) {
   const user = await currentUser();
-  
+
   if (!user) {
     redirect('/'); // Or handle auth
   }
 
-  const { q } = await searchParams;
+  const { q, tags: tagsParam } = await searchParams;
   const search = q || '';
+  const selectedTags = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
   const notes = await prisma.note.findMany({
     where: {
       userId: user.id,
-      OR: search ? [
-        { title: { contains: search, mode: 'insensitive' } },
-        { plainText: { contains: search, mode: 'insensitive' } },
-        // Prisma Postgres case insensitive mode
-      ] : undefined
+      AND: [
+        search ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { plainText: { contains: search, mode: 'insensitive' } },
+          ]
+        } : {},
+        selectedTags.length > 0 ? { tags: { hasSome: selectedTags } } : {}
+      ]
     },
     orderBy: { updatedAt: 'desc' }
   });
@@ -34,7 +40,10 @@ export default async function ArchivePage({ searchParams }: { searchParams: Prom
         <p className="text-slate-500 dark:text-slate-400">Explore tudo o que você já guardou.</p>
       </header>
 
-      <SearchInput />
+      <div className="space-y-4">
+        <SearchInput />
+        <TagFilter />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {notes.map(note => (
