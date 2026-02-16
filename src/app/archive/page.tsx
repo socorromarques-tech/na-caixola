@@ -3,34 +3,32 @@ import { prisma } from '@/lib/prisma';
 import { currentUser } from '@clerk/nextjs/server';
 import { NoteCard } from '@/components/NoteCard';
 import { SearchInput } from '@/components/SearchInput';
-import { TagFilter } from '@/components/TagFilter';
+import { FilterBar } from '@/components/FilterBar';
 import { redirect } from 'next/navigation';
 
-export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string; tags?: string }> }) {
+export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string; sort?: string }> }) {
   const user = await currentUser();
 
   if (!user) {
-    redirect('/'); // Or handle auth
+    redirect('/'); 
   }
 
-  const { q, tags: tagsParam } = await searchParams;
+  const { q, filter, sort } = await searchParams;
   const search = q || '';
-  const selectedTags = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
+  const isFavoriteFilter = filter === 'favorites';
+  const sortOrder = sort === 'asc' ? 'asc' : 'desc';
 
   const notes = await prisma.note.findMany({
     where: {
       userId: user.id,
-      AND: [
-        search ? {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { plainText: { contains: search, mode: 'insensitive' } },
-          ]
-        } : {},
-        selectedTags.length > 0 ? { tags: { hasSome: selectedTags } } : {}
-      ]
+      isFavorite: isFavoriteFilter ? true : undefined,
+      OR: search ? [
+        { title: { contains: search, mode: 'insensitive' } },
+        { plainText: { contains: search, mode: 'insensitive' } },
+        { tags: { has: search } }
+      ] : undefined
     },
-    orderBy: { updatedAt: 'desc' }
+    orderBy: { updatedAt: sortOrder }
   });
 
   return (
@@ -42,7 +40,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Prom
 
       <div className="space-y-4">
         <SearchInput />
-        <TagFilter />
+        <FilterBar />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,6 +52,8 @@ export default async function ArchivePage({ searchParams }: { searchParams: Prom
             preview={note.plainText}
             date={note.updatedAt}
             tags={note.tags}
+            isFavorite={note.isFavorite}
+            highlight={search}
           />
         ))}
       </div>

@@ -17,14 +17,15 @@ export async function createNote(title: string, content: string, plainText: stri
       title,
       content,
       plainText,
-      tags
+      tags,
+      isFavorite: false
     }
   })
 
   revalidatePath('/')
 }
 
-export async function updateNote(id: string, updates: { title?: string; content?: string; plainText?: string; tags?: string[] }) {
+export async function updateNote(id: string, updates: { title?: string; content?: string; plainText?: string; tags?: string[]; isFavorite?: boolean }) {
   const { userId } = await auth()
   
   if (!userId) {
@@ -42,6 +43,30 @@ export async function updateNote(id: string, updates: { title?: string; content?
   await prisma.note.update({
     where: { id },
     data: updates
+  })
+
+  revalidatePath('/')
+  revalidatePath(`/notes/${id}`)
+}
+
+export async function toggleFavorite(id: string, isFavorite: boolean) {
+  const { userId } = await auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  const note = await prisma.note.findUnique({
+    where: { id }
+  })
+
+  if (!note || note.userId !== userId) {
+    throw new Error('Unauthorized or Note not found')
+  }
+
+  await prisma.note.update({
+    where: { id },
+    data: { isFavorite }
   })
 
   revalidatePath('/')

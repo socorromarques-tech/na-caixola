@@ -1,8 +1,20 @@
 import { NotesList } from '@/components/NotesList';
 import { PenTool } from 'lucide-react';
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
+import { currentUser } from '@clerk/nextjs/server';
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const user = await currentUser();
+  
+  if (!user) return null;
+
+  const notes = await prisma.note.findMany({
+    where: { userId: user.id },
+    orderBy: { updatedAt: 'desc' },
+    take: 6
+  });
+
   return (
     <div className="space-y-8">
       <section className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-5 md:p-8 text-white shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden">
@@ -29,7 +41,7 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        <NotesList />
+        <NotesList notes={notes} />
       </section>
     </div>
   );
