@@ -7,22 +7,18 @@ import { updateNote } from '@/app/actions';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { NoteActions } from './NoteActions';
+import type { Note } from '@prisma/client';
+import { toast } from 'sonner';
 
 interface EditNoteProps {
-  note: {
-    id: string;
-    title: string;
-    content: string;
-    tags: string[];
-    createdAt: Date;
-  }
+  note: Note;
 }
 
 export function EditNote({ note }: EditNoteProps) {
   const router = useRouter();
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
-  const [plainText, setPlainText] = useState('');
+  const [plainText, setPlainText] = useState(note.plainText || '');
   const [tags, setTags] = useState(note.tags);
   const [status, setStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
 
@@ -35,9 +31,11 @@ export function EditNote({ note }: EditNoteProps) {
       try {
          await updateNote(note.id, { title, content, plainText, tags });
          setStatus('saved');
+         toast.success('Nota salva automaticamente!', { duration: 1500 });
       } catch (err) {
          console.error(err);
          setStatus('unsaved');
+         toast.error('Erro ao salvar nota.');
       }
     }, 1000); 
 
@@ -61,7 +59,7 @@ export function EditNote({ note }: EditNoteProps) {
              className="text-4xl font-bold bg-transparent border-none placeholder:text-slate-300 dark:placeholder:text-slate-600 dark:text-slate-100 focus:outline-none focus:ring-0 w-full"
            />
          </div>
-         <NoteActions id={note.id} />
+         <NoteActions note={note} />
        </header>
 
        <Editor 

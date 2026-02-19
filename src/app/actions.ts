@@ -94,3 +94,30 @@ export async function deleteNote(id: string) {
 
   revalidatePath('/')
 }
+
+export async function togglePublicLink(id: string, shouldShare: boolean) {
+  const { userId } = await auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  const note = await prisma.note.findUnique({
+    where: { id }
+  })
+
+  if (!note || note.userId !== userId) {
+    throw new Error('Unauthorized or Note not found')
+  }
+
+  const shareToken = shouldShare ? crypto.randomUUID() : null
+
+  await prisma.note.update({
+    where: { id },
+    data: { shareToken }
+  })
+
+  revalidatePath('/')
+  revalidatePath(`/notes/${id}`)
+  return shareToken
+}

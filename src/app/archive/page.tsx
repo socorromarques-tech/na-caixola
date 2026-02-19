@@ -4,30 +4,53 @@ import { currentUser } from '@clerk/nextjs/server';
 import { NoteCard } from '@/components/NoteCard';
 import { SearchInput } from '@/components/SearchInput';
 import { FilterBar } from '@/components/FilterBar';
+import { TagFilter } from '@/components/TagFilter';
 import { redirect } from 'next/navigation';
 
-export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string; sort?: string }> }) {
+export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ q?: string; filter?: string; sort?: string; tags?: string; startDate?: string; endDate?: string }> }) {
   const user = await currentUser();
 
   if (!user) {
     redirect('/'); 
   }
 
-  const { q, filter, sort } = await searchParams;
+  const { q, filter, sort, tags, startDate, endDate } = await searchParams;
   const search = q || '';
   const isFavoriteFilter = filter === 'favorites';
   const sortOrder = sort === 'asc' ? 'asc' : 'desc';
 
-  const notes = await prisma.note.findMany({
-    where: {
+  const whereClause: any = {
       userId: user.id,
       isFavorite: isFavoriteFilter ? true : undefined,
-      OR: search ? [
+  };
+
+  if (search) {
+     whereClause.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { plainText: { contains: search, mode: 'insensitive' } },
         { tags: { has: search } }
-      ] : undefined
-    },
+      ];
+  }
+
+  if (tags) {
+      const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
+      if (tagsArray.length > 0) {
+          whereClause.tags = { hasSome: tagsArray };
+      }
+  }
+
+  if (startDate || endDate) {
+      whereClause.updatedAt = {};
+      if (startDate) whereClause.updatedAt.gte = new Date(startDate);
+      if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          whereClause.updatedAt.lte = end;
+      }
+  }
+
+  const notes = await prisma.note.findMany({
+    where: whereClause,
     orderBy: { updatedAt: sortOrder }
   });
 
@@ -40,7 +63,12 @@ export default async function ArchivePage({ searchParams }: { searchParams: Prom
 
       <div className="space-y-4">
         <SearchInput />
-        <FilterBar />
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+            <FilterBar />
+            <div className="flex-1 w-full lg:w-auto">
+              <TagFilter /> 
+            </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

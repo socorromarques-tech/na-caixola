@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 import { Sidebar } from '@/components/Sidebar';
 import { BottomNav } from '@/components/BottomNav';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'Na Caixola - Seu Baú de Estudos',
@@ -43,6 +44,7 @@ export default function RootLayout({
                 </div>
               </main>
               <BottomNav />
+              <Toaster position="bottom-right" richColors />
             </div>
           </ThemeProvider>
         </body>
